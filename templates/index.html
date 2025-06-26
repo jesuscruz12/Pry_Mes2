@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Predicción de Rendimiento</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #e6f2ff, #e0ffe0);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .left-panel {
+      flex: 1;
+      background: #004d40;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      flex-direction: column;
+    }
+
+    .left-panel h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .left-panel p {
+      font-size: 1rem;
+      text-align: center;
+      line-height: 1.6;
+      max-width: 300px;
+    }
+
+    .form-container {
+      flex: 1;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    form {
+      width: 100%;
+      max-width: 400px;
+      padding: 2rem;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #00796b;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: #444;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 2rem;
+      padding: 12px;
+      background-color: #43a047;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2e7d32;
+    }
+
+    #resultado {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-weight: bold;
+      color: #333;
+      font-size: 18px;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .left-panel {
+        height: 200px;
+        flex: none;
+        padding: 1rem;
+      }
+
+      .form-container {
+        flex: 1;
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="left-panel">
+    <h1>Predicción Inteligente</h1>
+    <p>Ingresa los datos esenciales del cultivo para estimar el rendimiento agrícola en toneladas por hectárea.</p>
+  </div>
+
+  <div class="form-container">
+    <form onsubmit="predecir(event)">
+      <h2>Formulario de Cultivo</h2>
+
+      <label for="Rainfall_mm">Lluvia (mm):</label>
+      <input type="number" id="Rainfall_mm" name="Rainfall_mm" step="any" required>
+
+      <label for="Fertilizer_Used">¿Usó fertilizante? (1=Sí / 0=No):</label>
+      <input type="number" id="Fertilizer_Used" name="Fertilizer_Used" step="any" required>
+
+      <label for="Irrigation_Used">¿Usó riego? (1=Sí / 0=No):</label>
+      <input type="number" id="Irrigation_Used" name="Irrigation_Used" step="any" required>
+
+      <label for="Temperature_Celsius">Temperatura promedio (°C):</label>
+      <input type="number" id="Temperature_Celsius" name="Temperature_Celsius" step="any" required>
+
+      <button type="submit">Predecir</button>
+      <div id="resultado"></div>
+    </form>
+  </div>
+
+  <script>
+    function predecir(event) {
+      event.preventDefault();
+
+      const campos = [
+        'Rainfall_mm',
+        'Fertilizer_Used',
+        'Irrigation_Used',
+        'Temperature_Celsius'
+      ];
+
+      const data = new URLSearchParams();
+      for (let campo of campos) {
+        const valor = document.getElementById(campo).value;
+        if (valor === '' || isNaN(valor)) {
+          alert("Por favor completa todos los campos correctamente.");
+          return;
+        }
+        data.append(campo, valor);
+      }
+
+      fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: data
+      })
+      .then(response => response.json())
+      .then(data => {
+        const resultado = document.getElementById('resultado');
+        resultado.innerText = data.error 
+          ? 'Error: ' + data.error 
+          : '📈 Rendimiento estimado: ' + data.prediccion.toFixed(2) + ' tons/ha';
+      })
+      .catch(error => {
+        document.getElementById('resultado').innerText = 'Ocurrió un error.';
+        console.error(error);
+      });
+    }
+  </script>
+
+</body>
+</html>
